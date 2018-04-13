@@ -33,6 +33,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+	HANDLE hThread;
+	DWORD ThreadID;
 
 public:
 //	afx_msg void OnBnClickedButton1();//显示选择文件夹窗口
@@ -46,20 +48,22 @@ public:
 	CDC *m_pDC;//显示视频内容的窗口的设备上下文
 	HDC m_hDC;//窗口的设备上下文的绘图指针
 	HDC m_HDCImg;
-	void DoSSD();
+	void DOSSD();
 	void ShowTheImgSet(char* ImageName);//获取图片集的dir后负责显示一副图像
 	CRect  m_RectImg;
 	char* pJpg;
 	char* pBmp;
+	bool stop;
 	char* pPng;
 	char* pJPG;
 	int pos;
 	int sumimage;
-	char images_name[1000][100];
+	char images_name[2000][100];
 	afx_msg void OnBnClickedFolders();
 	afx_msg void OnBnClickedButtonnext();
 	afx_msg void OnBnClickedBefore();
-//	afx_msg void OnBnClickedCancel();
-	afx_msg void OnBnClickedSsd();
+	afx_msg void OnBnClickedSSD();
 	afx_msg void OnBnClickedCancel();
+	afx_msg void OnBnClickedStop();
+
 };

@@ -1,5 +1,4 @@
-﻿
-// ImageLoadDlg.cpp : 实现文件
+﻿// ImageLoadDlg.cpp : 实现文件
 //
 #include "stdafx.h"
 #include "ImageLoad.h"
@@ -8,6 +7,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include "cv.h"  
+#include<time.h>
 #include<string>
 using namespace cv;
 using namespace std;
@@ -35,8 +35,9 @@ BEGIN_MESSAGE_MAP(CImageLoadDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_Buttonnext, &CImageLoadDlg::OnBnClickedButtonnext)
 	ON_BN_CLICKED(IDC_BEFORE, &CImageLoadDlg::OnBnClickedBefore)
 	//	ON_BN_CLICKED(IDCANCEL, &CImageLoadDlg::OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_SSD, &CImageLoadDlg::OnBnClickedSsd)
+	ON_BN_CLICKED(IDC_SSD, &CImageLoadDlg::OnBnClickedSSD)
 	ON_BN_CLICKED(ID_CANCEL, &CImageLoadDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_Stop, &CImageLoadDlg::OnBnClickedStop)
 END_MESSAGE_MAP()
 // CImageLoadDlg 消息处理程序
 BOOL CImageLoadDlg::OnInitDialog()
@@ -196,7 +197,8 @@ void CImageLoadDlg::OnBnClickedFolders()
 	}
 	pos = 0;
 	sumimage = sum;
-	ShowTheImgSet(images_name[pos]);
+	//ShowTheImgSet(images_name[pos]);
+	DOSSD();
 }
 void CImageLoadDlg::ShowTheImgSet(char* ImageName)
 {
@@ -215,7 +217,8 @@ void CImageLoadDlg::OnBnClickedButtonnext()
 	if (pos < sumimage - 1)
 	{
 		pos++;
-		ShowTheImgSet(images_name[pos]);
+		//ShowTheImgSet(images_name[pos]);
+		DOSSD();
 	}
 }
 
@@ -224,7 +227,8 @@ void CImageLoadDlg::OnBnClickedBefore()
 	if (pos >0)
 	{
 		pos--;
-		ShowTheImgSet(images_name[pos]);
+		//ShowTheImgSet(images_name[pos]);
+		DOSSD();
 	}
 	// TODO: 在此添加控件通知处理程序代码
 }
@@ -234,7 +238,7 @@ const char* classNames[] = { "background",
 "cow", "diningtable", "dog", "horse",
 "motorbike", "person", "pottedplant",
 "sheep", "sofa", "train", "tvmonitor" };
-void CImageLoadDlg::DoSSD()
+void CImageLoadDlg::DOSSD()
 {
 	char *ImageName = images_name[pos];
 	char imageFullName[500];//保存图像文件全路径
@@ -290,27 +294,58 @@ void CImageLoadDlg::DoSSD()
 					xRightTop - xLeftBottom,
 					yRightTop - yLeftBottom);
 			rectangle(frame, object, Scalar(0, 255, 0));
-			String label = String(classNames[objectClass]) + ": " + conf;
-			int baseLine = 0;
-			Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-			rectangle(frame, Rect(Point(xLeftBottom, yLeftBottom - labelSize.height),	
-				Size(labelSize.width, labelSize.height + baseLine)),
-			   	Scalar(255, 255, 255), FILLED);
-			putText(frame, label, Point(xLeftBottom, yLeftBottom),
-			FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0));
-		 }
+			//判断是不是personif (classNames[objectClass]=='person')
+			{
+				String label = String(classNames[objectClass]) + ": " + conf;
+				int baseLine = 0;
+				Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+				rectangle(frame, Rect(Point(xLeftBottom, yLeftBottom - labelSize.height),	
+					Size(labelSize.width, labelSize.height + baseLine)),
+			   		Scalar(255, 255, 255), FILLED);
+				putText(frame, label, Point(xLeftBottom, yLeftBottom),
+				FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0));
+			}
+		}
 	}
 	imshow("view", frame);
 	//	imshow("detections", frame);
 	/*if (waitKey(1) >= 0) break;*/
 	// TODO: 在此添加控件通知处理程序代码
 }
-void CImageLoadDlg::OnBnClickedSsd()
+void CImageLoadDlg::OnBnClickedSSD()
 {
-	DoSSD();
+	float usetime;
+	stop = true;
+	clock_t start, end;
+	start = clock();
+	while(1)
+	{
+		if (stop == false)
+			break;
+		end = clock();
+		usetime = end- start;
+		if (usetime > 2000)
+		{
+			if (pos < sumimage - 1)
+				++pos;
+			else
+				break;
+			DOSSD();
+			MSG msg;
+			while (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			start = clock();		
+		}
+	}
 }
 void CImageLoadDlg::OnBnClickedCancel()
 {
 	exit(0);
-	// TODO: 在此添加控件通知处理程序代码
+}
+void CImageLoadDlg::OnBnClickedStop()
+{
+	stop = false;
 }
