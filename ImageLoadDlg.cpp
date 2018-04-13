@@ -283,26 +283,29 @@ void CImageLoadDlg::DOSSD()
 		if (confidence > confidenceThreshold)
 		{
 			size_t objectClass = (size_t)(detectionMat.at<float>(i, 1));
-			int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);	
-			int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
-			int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
-			int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
-			ss.str("");
-			ss << confidence;
-			String conf(ss.str());
-			Rect object(xLeftBottom, yLeftBottom,
-					xRightTop - xLeftBottom,
-					yRightTop - yLeftBottom);
-			rectangle(frame, object, Scalar(0, 255, 0));
 			//判断是不是personif (classNames[objectClass]=='person')
+			const char* s = "person";
+			if (strcmp(classNames[objectClass], s) == 0)
 			{
+				int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);	
+				int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
+				int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
+				int yRightTop = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
+				ss.str("");
+				ss << confidence;
+				String conf(ss.str());
+				Rect object(xLeftBottom, yLeftBottom,
+						xRightTop - xLeftBottom,
+						yRightTop - yLeftBottom);
+				rectangle(frame, object, Scalar(0, 255, 0));
+		
 				String label = String(classNames[objectClass]) + ": " + conf;
 				int baseLine = 0;
 				Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-				rectangle(frame, Rect(Point(xLeftBottom, yLeftBottom - labelSize.height),	
+				rectangle(frame, Rect(Point(xLeftBottom, yLeftBottom ),	
 					Size(labelSize.width, labelSize.height + baseLine)),
 			   		Scalar(255, 255, 255), FILLED);
-				putText(frame, label, Point(xLeftBottom, yLeftBottom),
+				putText(frame, label, Point(xLeftBottom, yLeftBottom+labelSize.height),
 				FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0));
 			}
 		}
