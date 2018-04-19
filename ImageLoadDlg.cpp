@@ -240,6 +240,20 @@ const char* classNames[] = { "background",
 "sheep", "sofa", "train", "tvmonitor" };
 void CImageLoadDlg::DOSSD()
 {
+	char *dirname1 = "识别出有人";
+	char *dirname2 = "识别出没有人";
+	char *dirname3 = "并不确定有没有人";
+	char DirName1[500];
+	char DirName2[500];
+	char DirName3[500];
+	sprintf(DirName1, "%s%s", m_Path, dirname1);
+	bool flag1 = CreateDirectory(DirName1, NULL);
+	sprintf(DirName2, "%s%s", m_Path, dirname2);
+	bool flag2 = CreateDirectory(DirName2, NULL);
+	sprintf(DirName3, "%s%s", m_Path, dirname3);
+	bool flag3= CreateDirectory(DirName3, NULL);	//建立三个文件夹
+	int hasperson = 0;
+	int personconfidence = 0;
 	char *ImageName = images_name[pos];
 	char imageFullName[500];//保存图像文件全路径
 	sprintf(imageFullName, "%s%s", m_ImageDir, ImageName);//目录和图片文件名拼接起来->图像文件全路径
@@ -287,6 +301,9 @@ void CImageLoadDlg::DOSSD()
 			const char* s = "person";
 			if (strcmp(classNames[objectClass], s) == 0)
 			{
+				hasperson = 1;
+				if (confidence >= 0.5)
+					personconfidence = 1;
 				int xLeftBottom = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);	
 				int yLeftBottom = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
 				int xRightTop = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
@@ -311,6 +328,33 @@ void CImageLoadDlg::DOSSD()
 		}
 	}
 	imshow("view", frame);
+	if (hasperson == 1)
+	{
+		
+		if (personconfidence == 1)//存在人，而且存在概率大于0.5的人 存在确定有人文件夹
+		{
+			char newimage[500];
+			sprintf(newimage, "%s%s", DirName1, "\\");
+			sprintf(newimage, "%s%s", newimage, ImageName);//目录和图片文件名拼接起来->图像文件全路径
+			imwrite(newimage, frame);
+		}
+		else//可能不存在人存在确定文件夹 
+		{
+			char newimage[500];
+			sprintf(newimage, "%s%s", DirName3, "\\");
+			sprintf(newimage, "%s%s", newimage, ImageName);//目录和图片文件名拼接起来->图像文件全路径
+			imwrite(newimage, frame);
+		}
+
+	
+	}
+	else//没有人  存在确定没有人文件夹
+	{
+		char newimage[500];
+		sprintf(newimage, "%s%s", DirName2, "\\");
+		sprintf(newimage, "%s%s", newimage, ImageName);//目录和图片文件名拼接起来->图像文件全路径
+		imwrite(newimage, frame);
+	}
 	//	imshow("detections", frame);
 	/*if (waitKey(1) >= 0) break;*/
 	// TODO: 在此添加控件通知处理程序代码
